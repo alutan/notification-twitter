@@ -4,16 +4,24 @@ This service expects a **JSON** object in the http body, containing the followin
 
 There is another implementation of this service called *notification-slack*, which posts the message to a **Slack** channel instead.  If both implmentations of the *Notification* service are installed, you could use **Istio** *routing rules* to determine which gets used, and under what conditions.
 
-### Deploy
-
-Use WebSphere Liberty helm chart to deploy Twitter Notification microservice:
-```bash
-helm repo add ibm-charts https://raw.githubusercontent.com/IBM/charts/master/repo/stable/
-helm install ibm-charts/ibm-websphere-liberty -f <VALUES_YAML> -n <RELEASE_NAME> --tls
+ ### Prerequisites for OCP Deployment
+ This project requires three secrets: `jwt`, and `twitter`.
+ 
+ ### Build and Deploy to OCP
+To build `notification-twitter` clone this repo and run:
 ```
+cd templates
 
-In practice this means you'll run something like:
-```bash
-helm repo add ibm-charts https://raw.githubusercontent.com/IBM/charts/master/repo/stable/
-helm install ibm-charts/ibm-websphere-liberty -f manifests/notification-twitter-values.yaml -n notification-twitter --namespace stock-trader --tls
+oc create -f notification-twitter-liberty-deploy.yaml -n notification-twitter-liberty-dev
+oc create -f notification-twitter-liberty-deploy.yaml -n notification-twitter-liberty-stage
+oc create -f notification-twitter-liberty-deploy.yaml -n notification-twitter-liberty-prod
+
+oc new-app notification-twitter-liberty-deploy -n notification-twitter-liberty-dev
+oc new-app notification-twitter-liberty-deploy -n notification-twitter-liberty-stage
+oc new-app notification-twitter-liberty-deploy -n notification-twitter-liberty-prod
+
+oc create -f notification-twitter-liberty-build.yaml -n notification-twitter-liberty-build
+
+oc new-app notification-twitter-liberty-build -n notification-twitter-liberty-build
+
 ```
